@@ -1,10 +1,9 @@
 import csv
 import io
 import os
-import re
 from datetime import date
 from flask import Blueprint, request, jsonify, send_file, current_app
-from werkzeug.utils import secure_filename
+from PIL import Image, UnidentifiedImageError
 from utils.data_manager import load_data, save_data, next_id
 from utils.validations import validate_member_data
 from utils.whatsapp_helper import generate_whatsapp_url
@@ -155,25 +154,30 @@ def upload_photo(member_id):
         return jsonify({'success': False, 'error': 'No se envió ningún archivo'}), 400
 
     file = request.files['photo']
-    if file.filename == '':
+    if not file or file.filename == '':
         return jsonify({'success': False, 'error': 'Nombre de archivo vacío'}), 400
 
-    if not allowed_file(file.filename):
+    # Read the file bytes and detect the image format using Pillow.
+    # This derives the extension entirely from the file content (not from the
+    # user-supplied filename), eliminating any path-injection risk.
+    file_bytes = file.read()
+    PIL_FORMAT_TO_EXT = {'JPEG': 'jpg', 'PNG': 'png', 'GIF': 'gif', 'WEBP': 'webp'}
+    try:
+        with Image.open(io.BytesIO(file_bytes)) as img:
+            ext = PIL_FORMAT_TO_EXT.get(img.format or '', '')
+    except (UnidentifiedImageError, Exception):
+        return jsonify({'success': False, 'error': 'Archivo de imagen inválido'}), 400
+
+    if not ext:
         return jsonify({'success': False, 'error': 'Tipo de archivo no permitido'}), 400
 
-    # Use werkzeug's secure_filename to sanitize the user-provided name,
-    # then extract and re-validate the extension before building the path.
-    safe_name = secure_filename(file.filename)
-    if not safe_name or not allowed_file(safe_name):
-        return jsonify({'success': False, 'error': 'Tipo de archivo no permitido'}), 400
-
-    ext = safe_name.rsplit('.', 1)[1].lower()
-    # Build a server-controlled filename using only the member ID and sanitized ext
+    # Build a fully server-controlled path: only member_id and the PIL-detected ext
     filename = f"member_{member_id}.{ext}"
     upload_folder = current_app.config.get('UPLOAD_FOLDER', 'static/photos')
     os.makedirs(upload_folder, exist_ok=True)
     filepath = os.path.join(upload_folder, filename)
-    file.save(filepath)
+    with open(filepath, 'wb') as fh:
+        fh.write(file_bytes)
 
     members[idx]['photo_path'] = f"/static/photos/{filename}"
     data['members'] = members
