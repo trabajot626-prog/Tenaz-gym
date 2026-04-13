@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gym-Tenaz – Iniciar Sesión</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="login-body">
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-logo">
+        <span class="logo-icon">💪</span>
+        <h1>Gym-Tenaz</h1>
+        <p class="login-subtitle">Sistema de Gestión</p>
+      </div>
+      <form id="loginForm" class="login-form" autocomplete="off">
+        <div class="form-group">
+          <label for="username">Usuario</label>
+          <input type="text" id="username" name="username" placeholder="admin" required autofocus>
+        </div>
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input type="password" id="password" name="password" placeholder="••••••" required>
+        </div>
+        <div id="loginError" class="alert alert-danger" style="display:none;"></div>
+        <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
+          Ingresar
+        </button>
+      </form>
+    </div>
+  </div>
+  <script src="/js/main.js"></script>
+  <script>
+    // If already logged in, go to dashboard
+    (async () => {
+      const res = await api.get('/api/auth/status');
+      if (res && res.success && res.data.logged_in) {
+        window.location.href = '/dashboard.html';
+      }
+    })();
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      const errEl = document.getElementById('loginError');
+      errEl.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Ingresando…';
+
+      const res = await api.post('/api/auth/login', {
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value
+      });
+
+      if (res && res.success) {
+        window.location.href = '/dashboard.html';
+      } else {
+        errEl.textContent = (res && res.error) || 'Error al iniciar sesión';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Ingresar';
+      }
+    });
+  </script>
+</body>
+</html>

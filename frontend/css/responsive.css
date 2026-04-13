@@ -1,0 +1,77 @@
+/* ============================================================
+   Gym-Tenaz – Responsive Stylesheet
+   ============================================================ */
+
+/* ── TABLET (768px – 1023px) ─────────────────────────────── */
+@media (max-width: 1023px) {
+  .form-row { grid-template-columns: 1fr 1fr; }
+
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── MOBILE (≤ 767px) ────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Sidebar: off-canvas */
+  .sidebar {
+    transform: translateX(-100%);
+    box-shadow: 4px 0 16px rgba(0,0,0,0.25);
+  }
+
+  .sidebar.open { transform: translateX(0); }
+
+  .sidebar-close { display: block; }
+
+  .hamburger { display: block; }
+
+  .main-content { margin-left: 0; }
+
+  /* KPI: single column */
+  .kpi-grid { grid-template-columns: 1fr; margin: 1rem; }
+
+  .card { margin: 1rem; }
+
+  /* Forms: single column */
+  .form-row { grid-template-columns: 1fr; }
+
+  /* Buttons: full width in modal actions */
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions .btn { width: 100%; justify-content: center; }
+
+  /* Search box: full width */
+  .search-box input { min-width: 0; width: 100%; }
+
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .toolbar-actions { flex-direction: column; }
+  .toolbar-actions .btn { width: 100%; justify-content: center; }
+
+  /* Table: horizontal scroll */
+  .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Table actions: stack vertically */
+  .table .actions { flex-direction: column; align-items: flex-start; }
+
+  /* Toast: full width */
+  #toast-container {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+  }
+  .toast { min-width: 0; width: 100%; }
+
+  /* Modal: full-screen-ish */
+  .modal { max-height: 95vh; }
+
+  /* Pagination: allow wrapping */
+  .pagination { justify-content: center; }
+}
+
+/* ── DESKTOP (≥ 1024px) ──────────────────────────────────── */
+@media (min-width: 1024px) {
+  .sidebar { transform: translateX(0) !important; }
+  .hamburger { display: none; }
+  .sidebar-close { display: none !important; }
+  .overlay { display: none !important; }
+}
