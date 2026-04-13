@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planes – Gym-Tenaz</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="app-body">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon">💪</span>
+      <span class="sidebar-title">Gym-Tenaz</span>
+      <button class="sidebar-close" id="sidebarClose">✕</button>
+    </div>
+    <ul class="sidebar-nav">
+      <li><a href="/dashboard.html">📊 Dashboard</a></li>
+      <li><a href="/members.html">👥 Miembros</a></li>
+      <li><a href="/plans.html" class="active">📋 Planes</a></li>
+      <li><a href="/payments.html">💰 Pagos</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <button class="btn btn-sm" id="logoutBtn">Cerrar Sesión</button>
+    </div>
+  </nav>
+  <div class="overlay" id="overlay"></div>
+
+  <main class="main-content">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger">☰</button>
+      <h2>Planes</h2>
+    </header>
+
+    <section class="card">
+      <div class="card-header toolbar">
+        <span></span>
+        <button class="btn btn-primary" id="addPlanBtn">+ Agregar Plan</button>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table" id="plansTable">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Duración (días)</th>
+                <th>Miembros</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="plansBody">
+              <tr><td colspan="5" class="text-center">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Add/Edit Plan Modal -->
+  <div class="modal-overlay" id="planModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="planModalTitle">Agregar Plan</h3>
+        <button class="modal-close" id="planModalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="planForm">
+          <input type="hidden" id="planId">
+          <div class="form-group">
+            <label>Nombre del Plan *</label>
+            <input type="text" id="planName" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Precio *</label>
+              <input type="number" id="planPrice" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label>Duración (días) *</label>
+              <input type="number" id="planDuration" min="1" value="30" required>
+            </div>
+          </div>
+          <div id="planFormError" class="alert alert-danger" style="display:none;"></div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="cancelPlanBtn">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plan Members Modal -->
+  <div class="modal-overlay" id="planMembersModal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 id="planMembersTitle">Miembros del Plan</h3>
+        <button class="modal-close" id="planMembersClose">✕</button>
+      </div>
+      <div class="modal-body" id="planMembersBody">Cargando…</div>
+    </div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script>
+    // Plans page logic
+    let plans = [];
+
+    async function loadPlans() {
+      const res = await api.get('/api/plans');
+      if (!res || !res.success) return;
+      plans = res.data;
+      renderPlans();
+    }
+
+    function renderPlans() {
+      const tbody = document.getElementById('plansBody');
+      if (!plans.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No hay planes registrados</td></tr>';
+        return;
+      }
+      tbody.innerHTML = plans.map(p => `
+        <tr>
+          <td>${escHtml(p.name)}</td>
+          <td>${formatMoney(p.price)}</td>
+          <td>${p.duration_days}</td>
+          <td>
+            <button class="btn btn-sm btn-secondary" onclick="viewPlanMembers(${p.id}, '${escHtml(p.name)}')">
+              ${p.member_count} ver
+            </button>
+          </td>
+          <td class="actions">
+            <button class="btn btn-sm btn-primary" onclick="editPlan(${p.id})">✏ Editar</button>
+            <button class="btn btn-sm btn-danger" onclick="deletePlan(${p.id}, '${escHtml(p.name)}')">🗑 Eliminar</button>
+            <a href="/api/plans/${p.id}/export/csv" class="btn btn-sm btn-secondary">⬇ CSV</a>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openAddPlan() {
+      document.getElementById('planId').value = '';
+      document.getElementById('planName').value = '';
+      document.getElementById('planPrice').value = '';
+      document.getElementById('planDuration').value = 30;
+      document.getElementById('planModalTitle').textContent = 'Agregar Plan';
+      document.getElementById('planFormError').style.display = 'none';
+      document.getElementById('planModal').classList.add('active');
+    }
+
+    function editPlan(id) {
+      const p = plans.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('planId').value = p.id;
+      document.getElementById('planName').value = p.name;
+      document.getElementById('planPrice').value = p.price;
+      document.getElementById('planDuration').value = p.duration_days;
+      document.getElementById('planModalTitle').textContent = 'Editar Plan';
+      document.getElementById('planFormError').style.display = 'none';
+      document.getElementById('planModal').classList.add('active');
+    }
+
+    async function deletePlan(id, name) {
+      if (!confirm(`¿Eliminar el plan "${name}"?`)) return;
+      const res = await api.delete(`/api/plans/${id}`);
+      if (res && res.success) {
+        showToast('Plan eliminado', 'success');
+        loadPlans();
+      } else {
+        showToast((res && res.error) || 'Error al eliminar', 'error');
+      }
+    }
+
+    async function viewPlanMembers(id, name) {
+      document.getElementById('planMembersTitle').textContent = `Miembros: ${name}`;
+      document.getElementById('planMembersBody').innerHTML = 'Cargando…';
+      document.getElementById('planMembersModal').classList.add('active');
+      const res = await api.get(`/api/plans/${id}/members`);
+      if (!res || !res.success) {
+        document.getElementById('planMembersBody').innerHTML = '<p class="text-danger">Error al cargar</p>';
+        return;
+      }
+      const members = res.data;
+      if (!members.length) {
+        document.getElementById('planMembersBody').innerHTML = '<p class="text-muted">Sin miembros en este plan</p>';
+        return;
+      }
+      document.getElementById('planMembersBody').innerHTML = `
+        <table class="table">
+          <thead><tr><th>Nombre</th><th>Cédula</th><th>Teléfono</th><th>Vencimiento</th></tr></thead>
+          <tbody>
+            ${members.map(m => `
+              <tr>
+                <td>${escHtml(m.name)} ${escHtml(m.last_name)}</td>
+                <td>${escHtml(m.id_number)}</td>
+                <td>${escHtml(m.phone)}</td>
+                <td>${m.expiry_date || '–'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    document.getElementById('addPlanBtn').addEventListener('click', openAddPlan);
+    document.getElementById('cancelPlanBtn').addEventListener('click', () => {
+      document.getElementById('planModal').classList.remove('active');
+    });
+    document.getElementById('planModalClose').addEventListener('click', () => {
+      document.getElementById('planModal').classList.remove('active');
+    });
+    document.getElementById('planMembersClose').addEventListener('click', () => {
+      document.getElementById('planMembersModal').classList.remove('active');
+    });
+
+    document.getElementById('planForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('planId').value;
+      const body = {
+        name: document.getElementById('planName').value,
+        price: parseFloat(document.getElementById('planPrice').value),
+        duration_days: parseInt(document.getElementById('planDuration').value)
+      };
+      const res = id
+        ? await api.put(`/api/plans/${id}`, body)
+        : await api.post('/api/plans', body);
+      if (res && res.success) {
+        document.getElementById('planModal').classList.remove('active');
+        showToast(id ? 'Plan actualizado' : 'Plan creado', 'success');
+        loadPlans();
+      } else {
+        const errEl = document.getElementById('planFormError');
+        errEl.textContent = (res && res.error) || 'Error al guardar';
+        errEl.style.display = 'block';
+      }
+    });
+
+    loadPlans();
+  </script>
+</body>
+</html>
