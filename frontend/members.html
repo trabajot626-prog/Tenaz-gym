@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Miembros – Gym-Tenaz</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="app-body">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon">💪</span>
+      <span class="sidebar-title">Gym-Tenaz</span>
+      <button class="sidebar-close" id="sidebarClose">✕</button>
+    </div>
+    <ul class="sidebar-nav">
+      <li><a href="/dashboard.html">📊 Dashboard</a></li>
+      <li><a href="/members.html" class="active">👥 Miembros</a></li>
+      <li><a href="/plans.html">📋 Planes</a></li>
+      <li><a href="/payments.html">💰 Pagos</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <button class="btn btn-sm" id="logoutBtn">Cerrar Sesión</button>
+    </div>
+  </nav>
+  <div class="overlay" id="overlay"></div>
+
+  <main class="main-content">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger">☰</button>
+      <h2>Miembros</h2>
+    </header>
+
+    <section class="card">
+      <div class="card-header toolbar">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Buscar por nombre, cédula, teléfono…">
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn btn-secondary" id="exportCsvBtn">⬇ Exportar CSV</button>
+          <button class="btn btn-primary" id="addMemberBtn">+ Agregar Miembro</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table" id="membersTable">
+            <thead>
+              <tr>
+                <th>Foto</th>
+                <th>Nombre</th>
+                <th>Cédula</th>
+                <th>Teléfono</th>
+                <th>Plan</th>
+                <th>Vencimiento</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="membersBody">
+              <tr><td colspan="7" class="text-center">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Add/Edit Member Modal -->
+  <div class="modal-overlay" id="memberModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Agregar Miembro</h3>
+        <button class="modal-close" id="memberModalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="memberForm">
+          <input type="hidden" id="memberId">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombre *</label>
+              <input type="text" id="memberName" required>
+            </div>
+            <div class="form-group">
+              <label>Apellido *</label>
+              <input type="text" id="memberLastName" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Cédula/ID *</label>
+              <input type="text" id="memberIdNumber" required>
+            </div>
+            <div class="form-group">
+              <label>Teléfono * (ej: +573001234567)</label>
+              <input type="tel" id="memberPhone" placeholder="+57..." required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="memberEmail">
+            </div>
+            <div class="form-group">
+              <label>Plan *</label>
+              <select id="memberPlan" required>
+                <option value="">Seleccionar plan…</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Fecha de Registro</label>
+              <input type="date" id="memberRegDate">
+            </div>
+            <div class="form-group">
+              <label>Fecha de Vencimiento</label>
+              <input type="date" id="memberExpiry">
+            </div>
+          </div>
+          <div id="memberFormError" class="alert alert-danger" style="display:none;"></div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="cancelMemberBtn">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail/View Modal -->
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 id="detailTitle">Detalle del Miembro</h3>
+        <button class="modal-close" id="detailModalClose">✕</button>
+      </div>
+      <div class="modal-body" id="detailBody">Cargando…</div>
+    </div>
+  </div>
+
+  <!-- Photo Upload Modal -->
+  <div class="modal-overlay" id="photoModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Subir Foto</h3>
+        <button class="modal-close" id="photoModalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="photoMemberId">
+        <div class="form-group">
+          <label>Seleccionar imagen (max 5 MB)</label>
+          <input type="file" id="photoFile" accept="image/*">
+        </div>
+        <div id="photoError" class="alert alert-danger" style="display:none;"></div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="cancelPhotoBtn">Cancelar</button>
+          <button class="btn btn-primary" id="uploadPhotoBtn">Subir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/whatsapp.js"></script>
+  <script src="/js/members.js"></script>
+</body>
+</html>

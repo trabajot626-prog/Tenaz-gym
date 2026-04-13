@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard – Gym-Tenaz</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="app-body">
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon">💪</span>
+      <span class="sidebar-title">Gym-Tenaz</span>
+      <button class="sidebar-close" id="sidebarClose">✕</button>
+    </div>
+    <ul class="sidebar-nav">
+      <li><a href="/dashboard.html" class="active">📊 Dashboard</a></li>
+      <li><a href="/members.html">👥 Miembros</a></li>
+      <li><a href="/plans.html">📋 Planes</a></li>
+      <li><a href="/payments.html">💰 Pagos</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <button class="btn btn-sm" id="logoutBtn">Cerrar Sesión</button>
+    </div>
+  </nav>
+  <div class="overlay" id="overlay"></div>
+
+  <!-- Main content -->
+  <main class="main-content">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger">☰</button>
+      <h2>Dashboard</h2>
+    </header>
+
+    <!-- KPI Cards -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-info">
+          <span class="kpi-label">Total Miembros</span>
+          <span class="kpi-value" id="totalMembers">–</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-active">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-info">
+          <span class="kpi-label">Miembros Activos</span>
+          <span class="kpi-value" id="activeMembers">–</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-income">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-info">
+          <span class="kpi-label">Ingresos del Mes</span>
+          <span class="kpi-value" id="monthlyIncome">–</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-warning">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-info">
+          <span class="kpi-label">Vencen Pronto</span>
+          <span class="kpi-value" id="expiringSoon">–</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Expiring Soon Table -->
+    <section class="card">
+      <div class="card-header">
+        <h3>Miembros que vencen en los próximos 7 días</h3>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table" id="expiringTable">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Vencimiento</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="expiringBody">
+              <tr><td colspan="4" class="text-center">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/whatsapp.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
