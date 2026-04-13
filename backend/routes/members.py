@@ -4,6 +4,7 @@ import os
 import re
 from datetime import date
 from flask import Blueprint, request, jsonify, send_file, current_app
+from werkzeug.utils import secure_filename
 from utils.data_manager import load_data, save_data, next_id
 from utils.validations import validate_member_data
 from utils.whatsapp_helper import generate_whatsapp_url
@@ -160,13 +161,14 @@ def upload_photo(member_id):
     if not allowed_file(file.filename):
         return jsonify({'success': False, 'error': 'Tipo de archivo no permitido'}), 400
 
-    # Sanitize the extension: keep only alphanumeric characters to prevent path traversal
-    raw_ext = file.filename.rsplit('.', 1)[1].lower()
-    ext = re.sub(r'[^a-z0-9]', '', raw_ext)
-    if ext not in ALLOWED_EXTENSIONS:
+    # Use werkzeug's secure_filename to sanitize the user-provided name,
+    # then extract and re-validate the extension before building the path.
+    safe_name = secure_filename(file.filename)
+    if not safe_name or not allowed_file(safe_name):
         return jsonify({'success': False, 'error': 'Tipo de archivo no permitido'}), 400
 
-    # Build a safe filename using only the member ID and the sanitized extension
+    ext = safe_name.rsplit('.', 1)[1].lower()
+    # Build a server-controlled filename using only the member ID and sanitized ext
     filename = f"member_{member_id}.{ext}"
     upload_folder = current_app.config.get('UPLOAD_FOLDER', 'static/photos')
     os.makedirs(upload_folder, exist_ok=True)
