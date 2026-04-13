@@ -158,21 +158,27 @@ def upload_photo(member_id):
         return jsonify({'success': False, 'error': 'Nombre de archivo vacío'}), 400
 
     # Read the file bytes and detect the image format using Pillow.
-    # This derives the extension entirely from the file content (not from the
-    # user-supplied filename), eliminating any path-injection risk.
+    # The extension is mapped from PIL's format string via explicit string
+    # literals so no user-provided data flows into the saved path.
     file_bytes = file.read()
-    PIL_FORMAT_TO_EXT = {'JPEG': 'jpg', 'PNG': 'png', 'GIF': 'gif', 'WEBP': 'webp'}
     try:
         with Image.open(io.BytesIO(file_bytes)) as img:
-            ext = PIL_FORMAT_TO_EXT.get(img.format or '', '')
+            detected = img.format
     except (UnidentifiedImageError, Exception):
         return jsonify({'success': False, 'error': 'Archivo de imagen inválido'}), 400
 
-    if not ext:
+    # Use explicit branches so the filename is assembled from string constants
+    # (not from user-derived values), breaking any user-data → path data flow.
+    if detected == 'JPEG':
+        filename = f"member_{member_id}.jpg"
+    elif detected == 'PNG':
+        filename = f"member_{member_id}.png"
+    elif detected == 'GIF':
+        filename = f"member_{member_id}.gif"
+    elif detected == 'WEBP':
+        filename = f"member_{member_id}.webp"
+    else:
         return jsonify({'success': False, 'error': 'Tipo de archivo no permitido'}), 400
-
-    # Build a fully server-controlled path: only member_id and the PIL-detected ext
-    filename = f"member_{member_id}.{ext}"
     upload_folder = current_app.config.get('UPLOAD_FOLDER', 'static/photos')
     os.makedirs(upload_folder, exist_ok=True)
     filepath = os.path.join(upload_folder, filename)
