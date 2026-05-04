@@ -71,26 +71,34 @@ npx live-server frontend --port=8080
 
 ---
 
-## Deploy en Render (Backend)
+## Deploy en Render (Backend) — hacer primero
 
 1. Crear cuenta en [render.com](https://render.com).
 2. Nuevo servicio **Web Service** → conectar repositorio.
-3. El archivo `backend/render.yaml` configura el servicio automáticamente.
+3. El archivo `render.yaml` en la raíz del repo configura el servicio automáticamente (`rootDir: backend`).
 4. Configurar `ADMIN_PASSWORD` como variable de entorno secreta en el dashboard de Render.
 5. El disco persistente `/var/data` almacena `gym_data.json`.
+6. Copiar la URL pública del servicio (ej. `https://gym-tenaz-backend.onrender.com`).
 
 ---
 
-## Deploy en Vercel (Frontend)
+## Deploy en Vercel (Frontend) — hacer después de tener la URL de Render
 
 1. Crear cuenta en [vercel.com](https://vercel.com).
-2. Importar repositorio → seleccionar carpeta `frontend/` como raíz.
-3. Agregar variable de entorno `NEXT_PUBLIC_API_URL` (o inyectar `window.API_URL` en un build step) apuntando a la URL del backend en Render.
-4. El archivo `frontend/vercel.json` configura rewrites y headers de seguridad.
+2. Importar repositorio → seleccionar carpeta **`frontend/`** como **Root Directory**.
+3. Agregar la variable de entorno **`API_URL`** con la URL del backend obtenida en el paso anterior (ej. `https://gym-tenaz-backend.onrender.com`).
+4. El `buildCommand` en `frontend/vercel.json` genera automáticamente `env.js` con esa URL.
+5. El archivo `frontend/vercel.json` configura también los rewrites y headers de seguridad.
+
+> **Variables de entorno (Vercel)**  
+> | Variable | Descripción | Ejemplo |  
+> |----------|-------------|---------|  
+> | `API_URL` | URL pública del backend en Render | `https://gym-tenaz-backend.onrender.com` |
 
 > **Nota:** Para que las cookies de sesión funcionen entre Vercel y Render, el backend tiene  
 > `SESSION_COOKIE_SAMESITE=None` y `SESSION_COOKIE_SECURE=True`, y CORS está configurado con  
-> `supports_credentials=True`.
+> `supports_credentials=True`. Además, `ALLOWED_ORIGIN` en Render debe coincidir con la URL  
+> del frontend en Vercel.
 
 ---
 

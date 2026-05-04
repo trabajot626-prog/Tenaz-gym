@@ -1,4 +1,6 @@
 {
+  "buildCommand": "echo \"window.API_URL = '${API_URL}';\" > env.js",
+  "outputDirectory": ".",
   "rewrites": [
     { "source": "/(.*)", "destination": "/$1" }
   ],
