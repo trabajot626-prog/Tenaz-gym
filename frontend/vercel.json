@@ -1,5 +1,5 @@
 {
-  "buildCommand": "echo \"window.API_URL = '${API_URL}';\" > env.js",
+  "buildCommand": "if [ -z \"$API_URL\" ]; then echo 'Error: API_URL env var is not set' && exit 1; fi; echo \"window.API_URL = '$API_URL';\" > env.js",
   "outputDirectory": ".",
   "rewrites": [
     { "source": "/(.*)", "destination": "/$1" }
